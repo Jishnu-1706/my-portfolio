@@ -98,6 +98,64 @@ for (let i = 0; i < formInputs.length; i++) {
   });
 }
 
+// add event to form submit
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  if (!form.checkValidity()) {
+    return;
+  }
+
+  // Disable button and show loading
+  formBtn.setAttribute("disabled", "");
+  formBtn.innerHTML = '<ion-icon name="paper-plane"></ion-icon><span>Sending...</span>';
+
+  // Get form data
+  const formData = new FormData(form);
+  const data = {
+    fullname: formData.get('fullname'),
+    email: formData.get('email'),
+    message: formData.get('message')
+  };
+
+  // Send to Telegram server
+  fetch('http://localhost:5000/send-message', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.status === 'success') {
+      // Success - show message and reset form
+      formBtn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon><span>Sent!</span>';
+      form.reset();
+
+      // Reset button after 3 seconds
+      setTimeout(() => {
+        formBtn.innerHTML = '<ion-icon name="paper-plane"></ion-icon><span>Send Message</span>';
+      }, 3000);
+    } else {
+      // Error
+      formBtn.innerHTML = '<ion-icon name="close-outline"></ion-icon><span>Failed</span>';
+      setTimeout(() => {
+        formBtn.innerHTML = '<ion-icon name="paper-plane"></ion-icon><span>Send Message</span>';
+        formBtn.removeAttribute("disabled");
+      }, 3000);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    formBtn.innerHTML = '<ion-icon name="close-outline"></ion-icon><span>Error</span>';
+    setTimeout(() => {
+      formBtn.innerHTML = '<ion-icon name="paper-plane"></ion-icon><span>Send Message</span>';
+      formBtn.removeAttribute("disabled");
+    }, 3000);
+  });
+});
+
 
 
 // page navigation variables
